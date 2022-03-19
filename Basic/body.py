@@ -41,9 +41,42 @@ def create_item2(path_var: str, crop: Crop, query: Optional[str] = None):
     return crop_dict
 
 
-# additional validations
+# ------- Query parameters validations------------
+# ------------------------------------------------
 from fastapi import Query
 
 # this type can have other type of validations, e.g. regex
 crop_indicator = Query("default_value", max_length=20, min_length=2)
+
+# for the query to be required (with no default):
+# Query(..., [kw parameters])
+# this uses Ellipsis (from Python)
+
+# this endpoint will return an Error if the Query type
+# specification is not fulfilled
+@app.get('/crops_q/')
+async def query_validation(indicator: Optional[str] = crop_indicator):
+    if indicator:
+        # some logic here
+        pass
+    return {
+        "indicator": indicator
+    }
+
+# You can also generate metadata, alias, deprecated indicator, etc, for the docs
+
+
+# ------------- Path parameters validation and metadata ---------------
+# ---------------------------------------------------------------------
+
+from fastapi import Path
+
+# using title (metadata) and number validations here
+path_type = Path(..., title="The item id", lt=100, gt=50)
+
+@app.get('/path_example/{item_id}/', )
+async def path_example(item_id: int = path_type):
+    return {
+        "data": item_id
+    }
 
