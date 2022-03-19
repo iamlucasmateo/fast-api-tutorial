@@ -42,4 +42,8 @@ def create_item2(path_var: str, crop: Crop, query: Optional[str] = None):
 
 
 # additional validations
+from fastapi import Query
+
+# this type can have other type of validations, e.g. regex
+crop_indicator = Query("default_value", max_length=20, min_length=2)
 
