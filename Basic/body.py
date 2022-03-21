@@ -1,5 +1,6 @@
 from decimal import Decimal
 from enum import Enum
+from re import M
 from typing import Optional, List, Dict
 
 from fastapi import FastAPI
@@ -80,3 +81,47 @@ async def path_example(item_id: int = path_type):
         "data": item_id
     }
 
+# ------------- Functionalities -------------------
+
+# You can have multiple body parameters: that is, 
+# multiple Pydantic models mapping to multiple keys in request body (JSON)
+
+class FieldSize(Enum):
+    big = "big"
+    medium = "medium"
+    small = "small"
+
+
+class Field(BaseModel):
+    main_crop: str
+    size: FieldSize
+    owner: Optional[str]
+
+
+@app.post('/double_body/{some_data}')
+def double_body(*, some_data: str, 
+                q1: int,
+                q2: Optional[str] = None, 
+                field: Field,
+                crop: Crop):
+    result = {
+        'from_URL': some_data,
+        'from_query': q1,
+        'field (from_body)': field,
+        'crop (also from_body)': crop
+    }
+    if q2:
+        result.update({'other_query': q2})
+    return result
+
+    # there is another class in FastAPI, Body. You use it when you will not
+    # use a Base Model, like this: def function([...], data: int = Body(...[,validations, metadata]))
+    # this will be expected in the request body
+    # also, to add a key in the body with the model name:
+    # { "item" : { "id": 23542435, "description": "something"  } }
+    # you would do def func([...], item: Item = Body(..., embed=True))
+
+    # You can use pydantic's Field class to add validation and metadata
+    # to a BaseModel attributes
+
+    # You can use nested models (i.e., a Field of one Model is another Field)
