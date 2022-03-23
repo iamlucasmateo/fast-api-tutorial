@@ -36,17 +36,17 @@ fake_users_db = {
 }
 
 
-def fake_decode_token(token: str):
-    return get_user(fake_users_db, token)
+async def fake_decode_token(token: str):
+    return await get_user(fake_users_db, token)
 
 async def get_user(db, username: str):
     if username in db:
-        user_dict = db['username']
+        user_dict = db[username]
         return UserInDB(**user_dict)
 
 
 async def get_current_user(token: str = Depends(oauth2)):
-    user = fake_decode_token(token)
+    user = await fake_decode_token(token)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -55,16 +55,11 @@ async def get_current_user(token: str = Depends(oauth2)):
         )
     return user
 
-
-
-
-
 # FastAPI will know to pass the token from the header
 # to the get_current_user function
 @app.get('/users/me')
 async def authenticated(current_user: User = Depends(get_current_user)):
-    print(current_user)
-    # return {'user': current_user}
+    return {'user': current_user}
 
 @app.get('/users/me')
 async def read_users_me(current_user: User = Depends(get_current_user)):
@@ -87,10 +82,3 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
         )
     
     return { 'access-token': user.username, 'token_type': 'bearer' } 
-
-
-
-
-# @app.get('/user/me')
-# async def read_items(current_user: User = Depends(get_current_user)):
-#     return current_user
